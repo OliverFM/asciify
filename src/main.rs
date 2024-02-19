@@ -2,6 +2,7 @@
 // latin letter
 // then I can make the asciify function
 
+use serde_json::json;
 use std::fs;
 use {once_cell::sync::Lazy, regex::Regex};
 
@@ -18,15 +19,31 @@ fn read_file_to_dict() -> Result<std::collections::HashMap<char, char>, std::io:
         if !RE.is_match(line) {
             continue;
         }
-        println!("{}\nescaped: {}", line, line.escape_unicode());
+        let mut should_print = false;
+        if line.contains("𝘄") {
+            should_print = true;
+            println!("line: {}", line);
+        }
+        if should_print {
+            println!("{}\nescaped: {}", line, line.escape_unicode());
+        }
         let components: Vec<&str> = line.split_whitespace().collect(); // map(|s| s.trim()).collect();
-        println!("{:?}", components);
+        if should_print {
+            println!("{:?}", components);
+        }
         if components.len() < 3 {
             continue;
         }
 
         for component in components[2..].iter() {
-            println!("component: {}", component);
+            if should_print {
+                println!(
+                    "component: {}, unicode: {}, is_ascii: {}",
+                    component,
+                    component.escape_unicode(),
+                    component.is_ascii(),
+                );
+            }
             dict.insert(
                 component.chars().next().unwrap(),
                 components[1].chars().next().unwrap(),
@@ -35,11 +52,17 @@ fn read_file_to_dict() -> Result<std::collections::HashMap<char, char>, std::io:
     }
     Ok(dict)
 }
+
 fn main() {
     let result = read_file_to_dict();
     match result {
         Ok(dict) => {
-            println!("Success: {:?}", dict);
+            // let json = json!(dict).to_string();
+            let file = fs::File::create("confusables.json").unwrap();
+            serde_json::to_writer(file, &dict).unwrap();
+            // let json = serde_json::to_string_pretty(&dict).unwrap();
+            //
+            // println!("Success: {:?}", json);
         }
         Err(e) => {
             println!("Error: {}", e);
