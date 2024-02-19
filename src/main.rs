@@ -19,7 +19,7 @@ fn read_file_to_dict() -> Result<std::collections::HashMap<char, char>, std::io:
         let mut should_print = false;
         debug!("line: {}", line);
         debug!("{}\nescaped: {}", line, line.escape_unicode());
-        let components: Vec<&str> = line.split_whitespace().collect(); // map(|s| s.trim()).collect();
+        let components: Vec<&str> = line.split_whitespace().collect();
         debug!("{:?}", components);
         if components.len() < 3 {
             continue;
