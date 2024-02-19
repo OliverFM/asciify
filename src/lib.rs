@@ -35,26 +35,3 @@ mod tests {
         assert_eq!(super::asciify("𝓗𝓮𝓵𝓵𝓸, 𝓦𝓸𝓻𝓵𝓭!"), "Hello, World!");
     }
 }
-
-/*
-const conversions = ImmutableMap<string, string>(confusables);
-
-export const asciify = (text: string): string => {
-  const arr = [];
-  let converted = false;
-  for (const char of text) {
-    if (conversions.has(char)) {
-      arr.push(conversions.get(char));
-      converted = true;
-    } else {
-      arr.push(char);
-    }
-  }
-  if (converted) {
-    return arr.join("");
-  }
-
-  return text;
-};
-
-*/
