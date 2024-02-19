@@ -34,4 +34,9 @@ mod tests {
     fn it_works() {
         assert_eq!(super::asciify("𝓗𝓮𝓵𝓵𝓸, 𝓦𝓸𝓻𝓵𝓭!"), "Hello, World!");
     }
+    #[test]
+    fn deals_with_cyrilic_v() {
+        assert_eq!(super::asciify("\u{0412}"), "B");
+        assert_eq!(super::asciify("В"), "B");
+    }
 }
