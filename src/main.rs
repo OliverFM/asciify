@@ -2,13 +2,15 @@
 // latin letter
 // then I can make the asciify function
 
-use serde_json::json;
+use env_logger;
+use log::{debug, error};
+use serde_json;
 use std::fs;
 use {once_cell::sync::Lazy, regex::Regex};
 
 fn read_file_to_dict() -> Result<std::collections::HashMap<char, char>, std::io::Error> {
     let string = fs::read_to_string("confusablesSummary.txt")?;
-    // println!("string[0..100]: {:?}", &string[0..100]);
+    // debug!("string[0..100]: {:?}", &string[0..100]);
     let lines = string.lines();
 
     // match # followed by optional whitespace then a letter then anything
@@ -20,33 +22,36 @@ fn read_file_to_dict() -> Result<std::collections::HashMap<char, char>, std::io:
             continue;
         }
         let mut should_print = false;
-        if line.contains("𝘄") {
-            should_print = true;
-            println!("line: {}", line);
-        }
-        if should_print {
-            println!("{}\nescaped: {}", line, line.escape_unicode());
-        }
+        debug!("line: {}", line);
+        debug!("{}\nescaped: {}", line, line.escape_unicode());
         let components: Vec<&str> = line.split_whitespace().collect(); // map(|s| s.trim()).collect();
-        if should_print {
-            println!("{:?}", components);
-        }
+        debug!("{:?}", components);
         if components.len() < 3 {
             continue;
         }
 
         for component in components[2..].iter() {
-            if should_print {
-                println!(
-                    "component: {}, unicode: {}, is_ascii: {}",
-                    component,
-                    component.escape_unicode(),
-                    component.is_ascii(),
-                );
-            }
+            debug!(
+                "component: {}, unicode: {}, is_ascii: {}",
+                component,
+                component.escape_unicode(),
+                component.is_ascii(),
+            );
             dict.insert(
                 component.chars().next().unwrap(),
                 components[1].chars().next().unwrap(),
+            );
+        }
+    }
+
+    for (key, value) in dict.iter() {
+        if !value.is_ascii() {
+            debug!(
+                "found non-ascii mapping:\n{} -> {}\n{} -> {}",
+                key,
+                value,
+                key.escape_unicode(),
+                value.escape_unicode()
             );
         }
     }
@@ -54,6 +59,7 @@ fn read_file_to_dict() -> Result<std::collections::HashMap<char, char>, std::io:
 }
 
 fn main() {
+    env_logger::init();
     let result = read_file_to_dict();
     match result {
         Ok(dict) => {
@@ -62,10 +68,10 @@ fn main() {
             serde_json::to_writer(file, &dict).unwrap();
             // let json = serde_json::to_string_pretty(&dict).unwrap();
             //
-            // println!("Success: {:?}", json);
+            // debug!("Success: {:?}", json);
         }
         Err(e) => {
-            println!("Error: {}", e);
+            error!("Error: {}", e);
         }
     }
 }
