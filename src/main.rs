@@ -1,7 +1,3 @@
-// first thing todo is to parse the file into a dictionary mapping everything to the corresponding
-// latin letter
-// then I can make the asciify function
-
 use env_logger;
 use log::{debug, error};
 use serde_json;
@@ -10,7 +6,6 @@ use {once_cell::sync::Lazy, regex::Regex};
 
 fn read_file_to_dict() -> Result<std::collections::HashMap<char, char>, std::io::Error> {
     let string = fs::read_to_string("confusablesSummary.txt")?;
-    // debug!("string[0..100]: {:?}", &string[0..100]);
     let lines = string.lines();
 
     // match # followed by optional whitespace then a letter then anything
@@ -63,12 +58,8 @@ fn main() {
     let result = read_file_to_dict();
     match result {
         Ok(dict) => {
-            // let json = json!(dict).to_string();
             let file = fs::File::create("confusables.json").unwrap();
             serde_json::to_writer(file, &dict).unwrap();
-            // let json = serde_json::to_string_pretty(&dict).unwrap();
-            //
-            // debug!("Success: {:?}", json);
         }
         Err(e) => {
             error!("Error: {}", e);
