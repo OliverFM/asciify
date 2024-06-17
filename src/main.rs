@@ -1,5 +1,5 @@
 use env_logger;
-use log::{debug, error};
+use log::{debug, error, warn};
 use serde_json;
 use std::fs;
 use {once_cell::sync::Lazy, regex::Regex};
@@ -11,12 +11,10 @@ fn read_file_to_dict() -> Result<std::collections::HashMap<char, char>, std::io:
     // match # followed by optional whitespace then a letter then anything
     static RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"#\s*[a-zA-Z]+").unwrap());
     let mut dict = std::collections::HashMap::new();
-    let mut count = 0;
-    for line in lines {
+    for line in lines.skip(9) {
         if !RE.is_match(line) {
             continue;
         }
-        let mut should_print = false;
         debug!("line: {}", line);
         debug!("{}\nescaped: {}", line, line.escape_unicode());
         let components: Vec<&str> = line.split_whitespace().collect();
@@ -32,16 +30,22 @@ fn read_file_to_dict() -> Result<std::collections::HashMap<char, char>, std::io:
                 component.escape_unicode(),
                 component.is_ascii(),
             );
-            dict.insert(
-                component.chars().next().unwrap(),
-                components[1].chars().next().unwrap(),
-            );
+            let key = component.chars().next().unwrap();
+            let value = components[1].chars().next().unwrap();
+            debug!("key: {}, value: {}", key, value);
+            if key.is_ascii() {
+                // Never replace an ascii character with a non-ascii character
+                // this is triggered by lines such as the confusable: "rn" -> "m"
+                dict.insert(key, key);
+            } else {
+                dict.insert(key, value);
+            }
         }
     }
 
     for (key, value) in dict.iter() {
         if !value.is_ascii() {
-            debug!(
+            warn!(
                 "found non-ascii mapping:\n{} -> {}\n{} -> {}",
                 key,
                 value,

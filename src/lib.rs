@@ -39,4 +39,12 @@ mod tests {
         assert_eq!(super::asciify("\u{0412}"), "B");
         assert_eq!(super::asciify("В"), "B");
     }
+    #[test]
+    fn does_not_convert_ascii() {
+        assert_eq!(super::asciify("Hello, World!"), "Hello, World!");
+        let lower = "abcdefghijklmnopqrstuvwxyz";
+        assert_eq!(super::asciify(lower), lower);
+        let upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        assert_eq!(super::asciify(upper), upper);
+    }
 }
